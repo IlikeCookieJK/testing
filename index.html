@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GLB Viewer with Shadows and Anti-Aliasing</title>
+    <style>
+        body {
+            margin: 0;
+        }
+
+
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+
+
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three/examples/js/loaders/GLTFLoader.js"></script>
+    <script>
+        // Create a Three.js scene
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        var renderer = new THREE.WebGLRenderer({ antialias: true }); // Enable anti-aliasing
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true; // Enable shadow mapping
+        document.body.appendChild(renderer.domElement);
+
+
+        // Add ambient light to the scene
+        var ambientLight = new THREE.AmbientLight(0xffffff, 2); // Soft white light
+        scene.add(ambientLight);
+
+
+        // Add directional light for shadows
+        var directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+        directionalLight.position.set(0, 10, -15);
+        // directionalLight.position.set(0, 10, 0);
+        directionalLight.castShadow = true; // Enable shadow casting
+        scene.add(directionalLight);
+
+
+        // Load the GLB model
+        var loader = new THREE.GLTFLoader();
+        loader.load(
+            '.glb', // Path to your GLB file
+            function (gltf) {
+                gltf.scene.traverse(function (child) {
+                    if (child.isMesh) {
+                        child.castShadow = true; // Set model to cast shadows
+                        child.receiveShadow = true; // Set model to receive shadows
+                    }
+                });
+                scene.add(gltf.scene);
+            },
+            undefined,
+            function (error) {
+                console.error('Error loading GLB file:', error);
+            }
+        );
+        directionalLight.shadow.bias = -0.001; // Adjust the bias value as needed
+
+
+
+
+        // Set camera position and orientation
+        scene.background = new THREE.Color(0x999999);
+        camera.position.set(1, 6, -15);
+        camera.rotation.set(0, Math.PI, 0); // Rotate camera by 180 degrees around y-axis
+
+
+        // Render the scene
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+        animate();
+    </script>
+</body>
+
+
+</html>
+
